@@ -31,7 +31,7 @@ adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask = load_da
 # Some preprocessing
 features = preprocess_features(features)
 if FLAGS.model == 'gcn':
-    support = [preprocess_adj(adj)]
+    support = [preprocess_adj(adj)] # Graph Laplacian rom adj matrix 
     num_supports = 1
     model_func = GCN
 elif FLAGS.model == 'gcn_cheby':

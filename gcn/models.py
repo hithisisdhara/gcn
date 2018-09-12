@@ -34,11 +34,12 @@ class Model(object):
 
     def _build(self):
         raise NotImplementedError
-
+        # from child class ( in our case, two GraphConvolution layers)
+        
     def build(self):
         """ Wrapper for _build() """
         with tf.variable_scope(self.name):
-            self._build()
+            self._build() # from child class -- add two GraphConvolution layers to self.layers 
 
         # Build sequential layer model
         self.activations.append(self.inputs)
@@ -128,7 +129,7 @@ class MLP(Model):
     def predict(self):
         return tf.nn.softmax(self.outputs)
 
-'''
+
 class GCN(Model):
     def __init__(self, placeholders, input_dim, **kwargs):
         super(GCN, self).__init__(**kwargs)
@@ -141,7 +142,7 @@ class GCN(Model):
 
         self.optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
 
-        self.build()
+        self.build() # build from Model
 
     def _loss(self):
         # Weight decay loss
@@ -167,56 +168,6 @@ class GCN(Model):
                                             logging=self.logging))
 
         self.layers.append(GraphConvolution(input_dim=FLAGS.hidden1,
-                                            output_dim=self.output_dim,
-                                            placeholders=self.placeholders,
-                                            act=lambda x: x,
-                                            dropout=True,
-                                            logging=self.logging))
-
-    def predict(self):
-        return tf.nn.softmax(self.outputs)
-'''
-class GCN(Model):
-    def __init__(self, placeholders, input_dim, **kwargs):
-        print ('here')
-        super(GCN, self).__init__(**kwargs)
-        self.learning_rate = 0.01
-        self.hidden1 = 16
-        self.weight_decay = 5e-4
-        self.inputs = placeholders['features']
-        self.input_dim = input_dim
-        # self.input_dim = self.inputs.get_shape().as_list()[1]  # To be supported in future Tensorflow versions
-        self.output_dim = placeholders['labels'].get_shape().as_list()[1]
-        self.placeholders = placeholders
-
-        self.optimizer = tf.train.AdamOptimizer(self.learning_rate)
-
-        self.build()
-
-    def _loss(self):
-        # Weight decay loss
-        for var in self.layers[0].vars.values():
-            self.loss += self.weight_decay * tf.nn.l2_loss(var)
-
-        # Cross entropy error
-        self.loss += masked_softmax_cross_entropy(self.outputs, self.placeholders['labels'],
-                                                  self.placeholders['labels_mask'])
-
-    def _accuracy(self):
-        self.accuracy = masked_accuracy(self.outputs, self.placeholders['labels'],
-                                        self.placeholders['labels_mask'])
-
-    def _build(self):
-
-        self.layers.append(GraphConvolution(input_dim=self.input_dim,
-                                            output_dim=self.hidden1,
-                                            placeholders=self.placeholders,
-                                            act=tf.nn.relu,
-                                            dropout=True,
-                                            sparse_inputs=True,
-                                            logging=self.logging))
-
-        self.layers.append(GraphConvolution(input_dim=self.hidden1,
                                             output_dim=self.output_dim,
                                             placeholders=self.placeholders,
                                             act=lambda x: x,

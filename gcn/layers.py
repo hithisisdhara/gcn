@@ -66,13 +66,13 @@ class Layer(object):
         self.sparse_inputs = False
 
     def _call(self, inputs):
-        return inputs
+        return inputs # this is implemented from the child class. 
 
     def __call__(self, inputs):
         with tf.name_scope(self.name):
             if self.logging and not self.sparse_inputs:
                 tf.summary.histogram(self.name + '/inputs', inputs)
-            outputs = self._call(inputs)
+            outputs = self._call(inputs) # the result of convolution forward, as defined in paper as 'renormalization trick') 
             if self.logging:
                 tf.summary.histogram(self.name + '/outputs', outputs)
             return outputs
@@ -137,7 +137,7 @@ class GraphConvolution(Layer):
         super(GraphConvolution, self).__init__(**kwargs)
 
         if dropout:
-            self.dropout = placeholders['dropout']
+            self.dropout = placeholders['dropout'] # this is a tensor
         else:
             self.dropout = 0.
 
@@ -151,6 +151,7 @@ class GraphConvolution(Layer):
         self.num_features_nonzero = placeholders['num_features_nonzero']
 
         with tf.variable_scope(self.name + '_vars'):
+            # this is a new scope 
             for i in range(len(self.support)):
                 self.vars['weights_' + str(i)] = glorot([input_dim, output_dim],
                                                         name='weights_' + str(i))
